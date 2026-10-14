@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en" data-theme="{{ prefs.theme }}" data-mode="{{ prefs.appearance }}" data-server="1"{% if prefs.colors %} data-custom="1"{% endif %}{% if prefs.reduce_motion %} data-motion="reduced"{% endif %}>
+<head>{% include "_head.html" %}<title>AURA</title></head>
+<body class="app-body">
+<div id="app" class="app" data-sidebar="open" data-panel="closed">
+  <div id="backdrop" class="backdrop" hidden></div>
+
+  <aside id="sidebar" class="sidebar" aria-label="Sidebar">
+    <div class="sb-inner">
+      <div class="brand">
+        <button id="sidebarToggle" class="mascot-btn" type="button" aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true"><span data-mascot data-state="idle"></span></button>
+        <span class="brand-name">AURA</span>
+      </div>
+      <button id="newChat" class="new-chat" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>New chat</span>
+      </button>
+      <div class="search-wrap">
+        <svg class="s-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="searchInput" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" maxlength="100">
+        <button id="searchClear" class="search-clear" type="button" aria-label="Clear search" hidden>✕</button>
+      </div>
+      <nav id="convList" class="conv-list" aria-label="Conversations"></nav>
+      <div class="account">
+        <button id="accountBtn" class="account-btn" type="button" aria-haspopup="dialog" data-open="dlgProfile">
+          <span class="avatar" id="avatar">{{ current_user.initials }}</span>
+          <span class="account-name" id="accountName">{{ current_user.display_name }}</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="chat">
+    <header class="chat-head">
+      <button id="sidebarOpen" class="mascot-btn sidebar-open" type="button" aria-label="Open or close sidebar" aria-controls="sidebar" aria-expanded="true"><span data-mascot data-state="idle"></span></button>
+      <h1 id="chatTitle">New chat</h1>
+      <button id="panelToggle" class="mascot-btn" type="button" aria-label="Toggle emotion analysis panel" aria-controls="panel" aria-expanded="false"><span data-mascot data-state="idle"></span></button>
+    </header>
+    <section id="messages" class="messages" aria-live="polite" aria-label="Conversation">
+      <div id="welcome" class="welcome">
+        <div class="welcome-mascot" data-mascot data-state="greeting"></div>
+        <h2>{{ welcome }}</h2>
+        <p class="muted">Type, or tap the mascot to talk. English, اردو and Roman Urdu all work.</p>
+      </div>
+    </section>
+    <div class="composer-wrap">
+      <div class="composer">
+        <textarea id="input" rows="1" placeholder="Message AURA" aria-label="Message" maxlength="2000"></textarea>
+        <button id="voiceBtn" class="mascot-btn" type="button" aria-label="Open voice mode" aria-haspopup="dialog"><span data-mascot data-state="idle"></span></button>
+        <button id="sendBtn" class="send-btn" type="button" aria-label="Send message">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <p class="hint">AURA is an AI companion, not a therapist or emergency service. Emotion estimates can be wrong.</p>
+    </div>
+  </main>
+
+  <aside id="panel" class="panel" aria-label="Emotion analysis">
+    <div class="panel-inner">
+      <div class="panel-mascot" data-mascot data-state="idle" id="panelMascot"></div>
+      <h2 class="panel-title">Emotion analysis</h2>
+      <p class="panel-badge">Text-based estimate. Not a diagnosis.</p>
+      <p id="emoEmpty" class="muted">Send a message to see how AURA reads it. Nothing is shown until a real analysis exists.</p>
+      <dl id="emoStats" class="stats" hidden>
+        <div><dt>Detected emotion (estimate)</dt><dd id="emoLabel">–</dd></div>
+        <div><dt>Model confidence</dt><dd><span id="emoConf">–</span><span class="bar"><span id="confBar" class="bar-fill"></span></span></dd><dd class="note">Raw model score, not a calibrated probability.</dd></div>
+        <div><dt>Emotion intensity</dt><dd id="emoIntensity">Not estimated</dd></div>
+        <div><dt>Distress-related signals <em>(experimental)</em></dt><dd id="distressLevel">–</dd><dd class="note">A heuristic over recent messages. Not a diagnosis.</dd></div>
+        <div><dt>Language</dt><dd id="emoLang">–</dd></div>
+        <div><dt>Analysis status</dt><dd id="emoStatus">–</dd></div>
+        <div><dt>Response strategy</dt><dd id="strategy">–</dd><dd class="note" id="reasons"></dd></div>
+        <div><dt>Reply speed</dt><dd id="speedInfo">–</dd></div>
+      </dl>
+      <h3 class="panel-sub">Recent turns</h3>
+      <div id="graph" class="graph" role="img" aria-label="Emotion confidence across recent turns"></div>
+      <p id="trendNote" class="muted small"></p>
+    </div>
+  </aside>
+</div>
+
+<div id="ctxMenu" class="menu ctx-menu" role="menu" hidden>
+  <button role="menuitem" type="button" data-act="pin">Pin</button>
+  <button role="menuitem" type="button" data-act="rename">Rename</button>
+  <button role="menuitem" type="button" data-act="delete" class="danger">Delete conversation</button>
+</div>
+
+<dialog id="dlgConfirm" class="dlg"><form method="dialog">
+  <h2 id="confirmTitle">Are you sure?</h2><p id="confirmText" class="muted"></p>
+  <div class="dlg-actions"><button class="btn" value="cancel">Cancel</button><button class="btn primary" value="ok" id="confirmOk">Delete</button></div>
+</form></dialog>
+
+<dialog id="dlgRename" class="dlg"><form method="dialog">
+  <h2>Rename conversation</h2>
+  <input id="renameInput" type="text" maxlength="120" aria-label="Conversation title">
+  <div class="dlg-actions"><button class="btn" value="cancel">Cancel</button><button class="btn primary" value="ok">Save</button></div>
+</form></dialog>
+
+<dialog id="dlgProfile" class="dlg" aria-labelledby="profTitle">
+  <button class="btn sheet-close" type="button" data-close aria-label="Close">✕</button>
+  <h2 id="profTitle">Profile</h2>
+  <div class="profile-top">
+    <div class="avatar-edit">
+      <span class="avatar big" id="profAvatar">{{ current_user.initials }}</span>
+      <button type="button" class="avatar-pencil" id="avatarEdit" aria-label="Change profile picture"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+      <input type="file" id="avatarFile" accept="image/png,image/jpeg,image/webp" hidden>
+    </div>
+    <div class="profile-name-col">
+      <label class="small muted" for="nameInput">Display name</label>
+      <div class="name-row"><input id="nameInput" type="text" maxlength="60" autocomplete="name"><button type="button" class="btn primary" id="nameSave" disabled>Save</button></div>
+      <div class="field-error" id="nameError" role="alert"></div>
+    </div>
+  </div>
+  <button type="button" class="btn small" id="avatarRemove" hidden>Remove picture</button>
+  <dl class="kv">
+    <div><dt>Email (read-only)</dt><dd id="profEmail">–</dd></div>
+    <div><dt>Theme</dt><dd id="profTheme">–</dd></div>
+  </dl>
+  <label class="field">Reply language
+    <select id="setLanguage"><option value="auto">Match my message</option><option value="en">English</option><option value="ur">Urdu (اردو)</option><option value="roman_ur">Roman Urdu</option></select></label>
+  <label class="field">Reply length
+    <select id="setStyle"><option value="balanced">Balanced</option><option value="concise">Short</option><option value="detailed">Detailed</option></select></label>
+  <div class="link-list">
+    <button type="button" data-open="dlgAppearance">Appearance &amp; themes <span aria-hidden="true">›</span></button>
+    <button type="button" data-open="dlgVoice">Voice preferences <span aria-hidden="true">›</span></button>
+    <button type="button" data-open="dlgMemory">Privacy &amp; memory <span aria-hidden="true">›</span></button>
+    <button type="button" data-open="dlgAnalytics">Analytics <span aria-hidden="true">›</span></button>
+    <button type="button" data-open="dlgCam">Webcam expression demo <span aria-hidden="true">›</span></button>
+    <a href="{{ url_for('privacy') }}">About &amp; limitations <span aria-hidden="true">›</span></a>
+    <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" id="logoutBtn">Log out <span aria-hidden="true">›</span></button></form>
+  </div>
+</dialog>
+
+<dialog id="dlgAppearance" class="dlg wide" aria-labelledby="appTitle">
+  <button class="btn sheet-close" type="button" data-close aria-label="Close">✕</button>
+  <h2 id="appTitle">Appearance</h2>
+  <h3>Light or dark</h3>
+  <div class="mode-switch" id="modeSwitch">
+    <button type="button" class="mode-dest" id="destLight" data-mode-choice="light" aria-pressed="true"><span><span class="ico" aria-hidden="true">☀</span>Light</span></button>
+    <div class="mode-walker" id="modeWalker" data-mascot data-state="idle" aria-hidden="true"></div>
+    <button type="button" class="mode-dest dark-dest" id="destDark" data-mode-choice="dark" aria-pressed="false"><span><span class="ico" aria-hidden="true">☾</span>Dark</span></button>
+  </div>
+  <h3>Colour theme</h3>
+  <div class="themes" id="themeGrid">
+    {% for key, label in themes %}<button type="button" class="theme-chip" data-theme="{{ key }}" data-theme-choice="{{ key }}" aria-pressed="false"><span class="swatch"></span>{{ label }}</button>{% endfor %}
+  </div>
+  <h3>Custom colours</h3>
+  <div class="color-grid" id="colorGrid">
+    {% for key, label in [("bg","Background"),("accent","Accent"),("card","Cards"),("text","Text")] %}
+    <label class="color-row"><span>{{ label }}</span><input type="color" data-color-picker="{{ key }}" aria-label="{{ label }} colour picker"><input type="text" data-color-hex="{{ key }}" maxlength="7" aria-label="{{ label }} HEX value" placeholder="#RRGGBB"></label>
+    {% endfor %}
+  </div>
+  <p class="contrast-note" id="contrastNote" role="status"></p>
+  <div class="dlg-actions"><button type="button" class="btn" id="colorReset">Reset to default</button><button type="button" class="btn" id="colorCancel">Cancel</button><button type="button" class="btn primary" id="colorApply">Apply</button></div>
+  <h3>Motion</h3>
+  <label class="check"><input type="checkbox" id="setReduceMotion"> Reduce motion (also follows your device setting)</label>
+</dialog>
+
+<dialog id="dlgVoice" class="dlg wide" aria-labelledby="voiceTitle">
+  <button class="btn sheet-close" type="button" data-close aria-label="Close">✕</button>
+  <h2 id="voiceTitle">Voice preferences</h2>
+  <label class="check"><input type="checkbox" id="setVoiceResponses"> Speak replies in voice mode</label>
+  <label class="check"><input type="checkbox" id="setAutoSpeak"> Read chat replies aloud</label>
+  <label class="check"><input type="checkbox" id="setVoiceGreeting"> Greet me when voice mode opens</label>
+  <label class="check"><input type="checkbox" id="setVoiceAuto"> Send what I say automatically (otherwise I review it first)</label>
+  <label class="field">Speech recognition language
+    <select id="setVoiceLang"><option value="en-US">English</option><option value="ur-PK">Urdu</option></select></label>
+  <label class="field">Voice <span id="voiceCount"></span>
+    <select id="setVoiceName" aria-describedby="voiceNote"></select></label>
+  <p class="small muted" id="voiceNote">Only voices installed on this device/browser are listed. Names are shown as the device reports them; AURA cannot know which one sounds “cute”, so pick by ear and use Test voice.</p>
+  <label class="field">Speed <output id="rateOut">1.0×</output><input type="range" id="setVoiceRate" min="0.5" max="2" step="0.1"></label>
+  <label class="field">Volume <output id="volOut">100%</output><input type="range" id="setVoiceVolume" min="0" max="1" step="0.05"></label>
+  <div class="dlg-actions"><button type="button" class="btn" id="voiceStop">Stop speaking</button><button type="button" class="btn primary" id="voiceTest">Test voice</button></div>
+</dialog>
+
+<dialog id="dlgMemory" class="dlg wide" aria-labelledby="memTitle">
+  <button class="btn sheet-close" type="button" data-close aria-label="Close">✕</button>
+  <h2 id="memTitle">Privacy &amp; memory</h2>
+  <label class="check"><input type="checkbox" id="memEnabled"> Let AURA use saved memory in replies</label>
+  <p class="muted small">AURA saves memory only when you ask (say “remember that …”) or add it here. Relevant items are sent to Gemini with your message. Memory is separate from conversations: deleting a chat does not erase memory, and clearing memory does not delete chats.</p>
+  <ul id="memList" class="mem-list"></ul>
+  <div class="mem-add"><input id="memInput" type="text" maxlength="300" placeholder="Add something for AURA to remember" aria-label="New memory"><button type="button" class="btn" id="memAdd">Add</button></div>
+  <div class="dlg-actions spread">
+    <span><button type="button" class="btn danger" id="memClear">Clear memory</button> <button type="button" class="btn danger" id="chatsClear">Delete all chats</button></span>
+  </div>
+</dialog>
+
+<dialog id="dlgAnalytics" class="dlg wide" aria-labelledby="anTitle">
+  <button class="btn sheet-close" type="button" data-close aria-label="Close">✕</button>
+  <h2 id="anTitle">Your analytics</h2>
+  <label class="field">Period
+    <select id="anDays"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option></select></label>
+  <div id="anBody" aria-live="polite"></div>
+  <p class="small muted">Only your own stored data and measured timings. Emotion labels are model estimates, not facts or diagnoses.</p>
+</dialog>
+
+<dialog id="dlgCam" class="dlg wide" aria-labelledby="camTitle">
+  <button class="btn sheet-close" type="button" data-close aria-label="Close and stop camera">✕</button>
+  <h2 id="camTitle">Webcam expression demo</h2>
+  <p class="muted">Shows your camera preview on this device. AURA has <strong>no facial-expression model installed</strong>, so it will never show an emotion from your face. Where your browser supports it, it can report whether a face is visible and how many.</p>
+  <div class="notice"><strong>Privacy:</strong> the camera is off until you press Start. Video stays on your device. Nothing is recorded, saved, uploaded or sent to any AI provider. Camera access needs HTTPS or localhost. Closing this window, logging out or leaving the page stops the camera.</div>
+  <div class="cam-states"><span class="pill" id="camState">Camera: Off</span><span class="pill" id="camAnalysis">Analysis: Not running</span></div>
+  <div class="cam-frame"><video id="camVideo" playsinline muted hidden></video><div class="cam-placeholder" id="camPlaceholder">Camera is off.</div></div>
+  <div id="camResult" class="notice" role="status" aria-live="polite">No analysis yet.</div>
+  <p class="disclaimer" id="camDisclaimer">Educational and research purposes only. This feature estimates visible facial-expression patterns and is not a medical diagnostic tool. It does not provide medical treatment, and facial expressions alone cannot reliably establish anxiety level or mental state.</p>
+  <div class="dlg-actions"><button type="button" class="btn" id="camPause" disabled>Pause analysis</button><button type="button" class="btn danger" id="camStop" disabled>Stop camera</button><button type="button" class="btn primary" id="camStart">Start camera</button></div>
+</dialog>
+
+<div id="voiceScreen" class="voice-screen" role="dialog" aria-modal="true" aria-labelledby="vsTitle" hidden>
+  <div class="voice-card">
+    <div class="voice-top"><strong id="vsTitle">Voice mode</strong><button type="button" class="vbtn" id="vsClose" aria-label="Exit voice mode">✕ Exit</button></div>
+    <div class="voice-mascot" id="voiceMascot" data-mascot data-state="idle"></div>
+    <div class="voice-status" id="vsStatus" role="status" aria-live="polite">Tap the microphone to talk</div>
+    <div class="voice-error" id="vsError" role="alert" hidden></div>
+    <div class="voice-box" id="vsYouBox"><small>You</small><span id="vsYou">…</span><textarea id="vsEdit" rows="2" aria-label="Edit what you said" hidden></textarea></div>
+    <div class="voice-box"><small>AURA</small><span id="vsReply">…</span></div>
+    <div class="voice-controls">
+      <button type="button" class="vbtn primary" id="vsMic" aria-pressed="false">🎤 <span id="vsMicLabel">Talk</span></button>
+      <button type="button" class="vbtn" id="vsSend" hidden>Send</button>
+      <button type="button" class="vbtn" id="vsStop">■ Stop</button>
+      <button type="button" class="vbtn" id="vsMute" aria-pressed="false">🔊 Mute</button>
+      <button type="button" class="vbtn" id="vsSettings">⚙ Voice settings</button>
+    </div>
+    <p class="small muted">Speech recognition is done by your browser. AURA only receives the text you send.</p>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+{% include "_mascot.html" %}
+{% for f in ["mascot", "api", "emotion", "voice", "chat", "voicemode", "camera", "memory", "settings", "app"] %}
+<script src="{{ url_for('static', filename='js/' ~ f ~ '.js') }}"></script>
+{% endfor %}
+</body>
+</html>

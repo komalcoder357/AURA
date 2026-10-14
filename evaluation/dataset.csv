@@ -1,0 +1,24 @@
+text,language,expected
+I just got the job offer and I can't stop smiling,en,joy
+Today was the best day I've had in months,en,joy
+I miss her so much and I can't stop crying,en,sadness
+Nobody came to my birthday and I feel empty,en,sadness
+I am furious that they lied to my face,en,anger
+This traffic is making me so angry,en,anger
+I'm terrified about the exam tomorrow,en,fear
+I keep shaking before presentations because I'm scared,en,fear
+That smell was disgusting and I felt sick,en,disgust
+The meeting is at three o'clock in room four,en,neutral
+مجھے آج بہت خوشی ہو رہی ہے,ur,joy
+میں بہت اداس ہوں اور اکیلا محسوس کرتا ہوں,ur,sadness
+مجھے بہت غصہ آ رہا ہے,ur,anger
+مجھے امتحان سے بہت ڈر لگ رہا ہے,ur,fear
+مجھے کل کی میٹنگ کا وقت بتاؤ,ur,neutral
+اس کی کامیابی پر مبارک ہو بہت زبردست,ur,joy
+Main bohat khush hun aaj,roman_ur,joy
+Mujhe aj bohat udaasi ho rahi hai,roman_ur,sadness
+Mujhe bohat gussa aa raha hai,roman_ur,anger
+Mujhe exam se bohat dar lag raha hai,roman_ur,fear
+Kal ki meeting ka time kya hai,roman_ur,neutral
+Main khush nahi hun,roman_ur,sadness
+Mera mood off hai,roman_ur,sadness

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Privacy &amp; About · AURA{% endblock %}
+{% block content %}
+<article class="prose">
+<h1>Privacy &amp; About</h1>
+<h2>What AURA stores</h2>
+<p>Your account (email, display name, password hash, optional avatar), conversations and messages, per-message emotion estimates (label, score, method, language), reply timings, memory items you choose to save, and your preferences (theme, voice, language).</p>
+<h2>What is sent to Gemini</h2>
+<p>Only your current message, a bounded number of recent messages from the same conversation, and saved memory items relevant to the message. Chat search runs on our own database and is never sent to Gemini.</p>
+<h2>Voice</h2>
+<p>Speech recognition and speech output use your browser. In Chrome and Edge, recognised speech may be processed by the browser vendor's online speech service; AURA itself never receives audio, only the final text you submit. Spoken replies use voices installed on your device.</p>
+<h2>Camera (Webcam demo)</h2>
+<p>The camera is off until you press Start. Video is shown only on your device and is not recorded, saved or uploaded. AURA contains no expression-classification model, so the demo shows a preview and, where your browser supports it, a face count only.</p>
+<h2>Deleting data</h2>
+<p><strong>Deleting a conversation</strong> removes its messages and analysis. It does not delete saved memory. <strong>Clearing memory</strong> removes saved memory items. It does not delete conversations. AURA saves memory only when you explicitly ask (for example “remember that …”) or add it yourself.</p>
+<h2>What the emotion panel is, and is not</h2>
+<ul>
+<li>The label is a text-based estimate from a classifier (English) or an experimental keyword list (Urdu, Roman Urdu). It is a guess about the text, not about how you feel, and not a diagnosis.</li>
+<li>“Confidence” is the model's raw score, not a calibrated probability, and not emotional intensity. Intensity is not estimated.</li>
+<li>“Distress-related signals” is an experimental heuristic over recent messages. It is not a diagnosis, a clinical score or a validated assessment.</li>
+<li>Facial-expression estimates (if ever added) would be a separate source from text estimates and from what you tell AURA yourself.</li>
+<li>AURA is an educational assistant, not a doctor, therapist or emergency service. If you are in danger, contact local emergency services or a trusted person.</li>
+</ul>
+<p><a href="{{ url_for('index') }}">Back to AURA</a></p>
+</article>
+{% endblock %}

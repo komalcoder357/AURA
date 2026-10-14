@@ -1,0 +1,84 @@
+/* One mascot, many sizes. State = data-state on the host element ([data-mascot]).
+   States: idle, greeting, attentive, listening, processing(thinking), speaking, happy, concerned, shy, guiding, walking, error, neutral, empathetic */
+[data-mascot] { display: block; }
+.mascot-svg { width: 100%; height: 100%; overflow: visible; }
+.mascot-svg * { transform-box: fill-box; transform-origin: center; }
+.m-body, .m-arm ellipse { fill: var(--mascot-body); stroke: var(--mascot-ear); stroke-width: 2; }
+.m-ear { fill: var(--mascot-ear); } .m-ear-inner { fill: var(--mascot-body); }
+.m-shadow { fill: var(--mascot-ear); opacity: .35; }
+.m-cheek { fill: var(--mascot-cheek); opacity: .55; transition: opacity .3s; }
+.m-eye { fill: var(--mascot-ink); } .m-glint { fill: #fff; }
+.m-brow { fill: none; stroke: var(--mascot-ink); stroke-width: 2.4; stroke-linecap: round; display: none; }
+.m-mouth { fill: none; stroke: var(--mascot-ink); stroke-width: 2.6; stroke-linecap: round; display: none; }
+.m-mouth-open { fill: var(--mascot-ink); display: none; }
+.m-mouth-smile { display: block; }
+
+/* Seated by default; rises when active */
+.m-body-group { transform: translateY(2px) scale(.98); transition: transform .35s ease; animation: m-float 4.5s ease-in-out infinite; }
+.m-arm { transition: transform .35s ease; }
+.m-arm-l { transform-origin: 70% 20%; } .m-arm-r { transform-origin: 30% 20%; }
+.m-eye { animation: m-blink 5s infinite; transition: transform .3s; }
+.m-eyes, .m-glint { transition: opacity .25s; }
+
+[data-state="greeting"] .m-body-group { transform: translateY(-2px) scale(1); }
+[data-state="greeting"] .m-arm-r { animation: m-wave .9s ease-in-out 3; }
+[data-state="greeting"] .m-cheek { opacity: .9; }
+
+[data-state="attentive"] .m-body-group { transform: translateY(-5px) scale(1.03); }
+[data-state="attentive"] .m-eye { transform: scale(1.18); }
+[data-state="attentive"] .m-ear-l, [data-state="attentive"] .m-ear-r { transform: translateY(-2px); }
+
+[data-state="listening"] .m-body-group, [data-state="processing"] .m-body-group, [data-state="speaking"] .m-body-group { transform: translateY(-2px) scale(1); }
+[data-state="listening"] .m-eye { transform: scale(1.15); }
+[data-state="listening"] .m-ear-l { animation: m-perk 1.4s ease-in-out infinite; } [data-state="listening"] .m-ear-r { animation: m-perk 1.4s ease-in-out .3s infinite reverse; }
+[data-state="listening"] .m-mouth-smile { display: none; } [data-state="listening"] .m-mouth-open { display: block; transform: scale(.55); }
+
+[data-state="processing"] .m-mouth-smile, [data-state="neutral"] .m-mouth-smile, [data-state="empathetic"] .m-mouth-smile { display: none; }
+[data-state="processing"] .m-mouth-flat, [data-state="neutral"] .m-mouth-flat, [data-state="empathetic"] .m-mouth-flat { display: block; }
+[data-state="processing"] .m-brow { display: block; }
+[data-state="processing"] .m-brow-l { transform: translateY(-2px) rotate(-6deg); } [data-state="processing"] .m-brow-r { transform: translateY(-4px) rotate(6deg); }
+[data-state="processing"] .m-eyes { animation: m-look 1.8s ease-in-out infinite; }
+[data-state="processing"] .m-arm-r { transform: rotate(-70deg) translate(-4px, -6px); } /* hand toward chin: thinking */
+
+[data-state="speaking"] .m-mouth-smile { display: none; }
+[data-state="speaking"] .m-mouth-open { display: block; animation: m-talk .42s ease-in-out infinite; }
+
+[data-state="happy"] .m-body-group { animation: m-bounce .8s ease-in-out 3; }
+[data-state="happy"] .m-cheek { opacity: 1; }
+[data-state="happy"] .m-arm-r, [data-state="happy"] .m-arm-l { transform: rotate(-30deg); }
+[data-state="happy"] .m-eye { transform: scaleY(.45); }
+
+[data-state="empathetic"] .m-brow { display: block; } [data-state="empathetic"] .m-brow-l { transform: rotate(-8deg); } [data-state="empathetic"] .m-brow-r { transform: rotate(8deg); }
+
+[data-state="concerned"] .m-body-group { transform: translateY(0) rotate(-6deg); animation: none; }
+[data-state="concerned"] .m-mouth-smile { display: none; } [data-state="concerned"] .m-mouth-sad { display: block; }
+[data-state="concerned"] .m-brow { display: block; } [data-state="concerned"] .m-brow-l { transform: rotate(10deg) translateY(-2px); } [data-state="concerned"] .m-brow-r { transform: rotate(-10deg) translateY(-2px); }
+[data-state="concerned"] .m-cheek { opacity: .25; }
+
+/* Password-shy: both hands cover the eyes. Arms are 20/100,86 and eyes are 45/75,62. */
+[data-state="shy"] .m-body-group { transform: translateY(0) scale(1); }
+[data-state="shy"] .m-arm-l { transform: translate(25px, -25px) scale(1.5); }
+[data-state="shy"] .m-arm-r { transform: translate(-25px, -25px) scale(1.5); }
+[data-state="shy"] .m-arm { z-index: 3; }
+[data-state="shy"] .m-mouth-smile { display: none; } [data-state="shy"] .m-mouth-flat { display: block; }
+
+[data-state="guiding"] .m-body-group { transform: translateY(-2px) rotate(4deg); }
+[data-state="guiding"] .m-arm-r { transform: rotate(-65deg); animation: m-point 1.1s ease-in-out infinite; }
+
+[data-state="walking"] .m-body-group { animation: none; transform: translateY(-1px) scale(1); }
+[data-state="walking"] .m-arm-l { animation: m-swing .36s ease-in-out infinite alternate; }
+[data-state="walking"] .m-arm-r { animation: m-swing .36s ease-in-out infinite alternate-reverse; }
+
+[data-state="error"] .m-mouth-smile { display: none; } [data-state="error"] .m-mouth-sad { display: block; }
+[data-state="error"] .m-brow { display: block; } [data-state="error"] .m-brow-l { transform: rotate(10deg); } [data-state="error"] .m-brow-r { transform: rotate(-10deg); }
+[data-state="error"] .m-body-group { animation: none; }
+
+@keyframes m-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2.5px; } }
+@keyframes m-blink { 0%, 92%, 100% { scale: 1 1; } 95% { scale: 1 .1; } }
+@keyframes m-wave { 0%, 100% { transform: rotate(-20deg); } 50% { transform: rotate(-60deg); } }
+@keyframes m-perk { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+@keyframes m-look { 0%, 100% { translate: 0 0; } 50% { translate: 3px -2px; } }
+@keyframes m-talk { 0%, 100% { transform: scaleY(.5); } 50% { transform: scaleY(1.25); } }
+@keyframes m-bounce { 0%, 100% { translate: 0 0; } 40% { translate: 0 -9px; } }
+@keyframes m-point { 0%, 100% { transform: rotate(-65deg); } 50% { transform: rotate(-52deg); } }
+@keyframes m-swing { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }

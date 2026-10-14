@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Create account · AURA{% endblock %}
+{% block content %}
+<h1>Create your account</h1>
+<p class="muted">Your chats and saved memory stay private to your account.</p>
+<div id="formError" class="form-error" role="alert" {% if not error %}hidden{% endif %}>{{ error or "" }}</div>
+<form method="post" action="{{ url_for('auth.register') }}" class="auth-form" id="authForm" data-kind="register" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Display name
+    <input type="text" name="display_name" id="display_name" required maxlength="60" autocomplete="name" value="{{ values.get('display_name', '') }}" aria-describedby="err-display_name" {% if field_errors.get('display_name') %}aria-invalid="true"{% endif %}>
+    <span class="field-error" id="err-display_name">{{ field_errors.get('display_name', '') }}</span>
+  </label>
+  <label>Email
+    <input type="email" name="email" id="email" required autocomplete="email" value="{{ values.get('email', '') }}" aria-describedby="err-email" {% if field_errors.get('email') %}aria-invalid="true"{% endif %}>
+    <span class="field-error" id="err-email">{{ field_errors.get('email', '') }}</span>
+  </label>
+  <label>Password <small>(8+ characters, a letter and a number)</small>
+    <span class="pw-wrap">
+      <input type="password" name="password" id="password" required minlength="8" autocomplete="new-password" aria-describedby="err-password" {% if field_errors.get('password') %}aria-invalid="true"{% endif %}>
+      {% with target="password" %}{% include "_eye.html" %}{% endwith %}
+    </span>
+    <span class="field-error" id="err-password">{{ field_errors.get('password', '') }}</span>
+  </label>
+  <label>Confirm password
+    <span class="pw-wrap">
+      <input type="password" name="confirm_password" id="confirm_password" required autocomplete="new-password" aria-describedby="err-confirm_password" {% if field_errors.get('confirm_password') %}aria-invalid="true"{% endif %}>
+      {% with target="confirm_password" %}{% include "_eye.html" %}{% endwith %}
+    </span>
+    <span class="field-error" id="err-confirm_password">{{ field_errors.get('confirm_password', '') }}</span>
+  </label>
+  <button class="btn primary" type="submit" id="submitBtn">Create account</button>
+</form>
+<p class="muted">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/auth.js') }}"></script>{% endblock %}

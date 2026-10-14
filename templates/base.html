@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en" data-theme="baby-pink" data-mode="light">
+<head>
+  {% include "_head.html" %}
+  <title>{% block title %}AURA{% endblock %}</title>
+</head>
+<body class="auth-body">
+  <main class="auth-card" id="authCard">
+    <div class="auth-mascot" id="authMascot" data-mascot data-state="idle" aria-hidden="true"></div>
+    {% block content %}{% endblock %}
+  </main>
+  {% include "_mascot.html" %}
+  <script src="{{ url_for('static', filename='js/mascot.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

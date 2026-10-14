@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="baby-pink" data-mode="light">
+<head>{% include "_head.html" %}<title>AURA · Emotion-aware AI companion</title></head>
+<body class="landing-body">
+  <main class="landing-card">
+    <div class="landing-mascot" id="landingMascot" data-mascot data-state="greeting" aria-hidden="true"></div>
+    <h1>Hi, I'm AURA</h1>
+    <p class="muted">A friendly AI companion that chats by text or voice in English, Urdu and Roman Urdu, and shows an honest, labelled estimate of the emotion in your messages.</p>
+    <div class="landing-cta">
+      <a class="btn primary" href="{{ url_for('auth.login') }}">Log in</a>
+      <a class="btn" href="{{ url_for('auth.register') }}">Create account</a>
+    </div>
+    <ul class="landing-points">
+      <li>Your chats and saved memory are private to your account.</li>
+      <li>Emotion labels are estimates from a model, never a diagnosis.</li>
+      <li>AURA is not a therapist or an emergency service.</li>
+    </ul>
+    <p class="small muted"><a href="{{ url_for('privacy') }}">Privacy &amp; limitations</a></p>
+  </main>
+  {% include "_mascot.html" %}
+  <script src="{{ url_for('static', filename='js/mascot.js') }}"></script>
+</body>
+</html>
