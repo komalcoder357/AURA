@@ -4,3 +4,6 @@ instance/
 __pycache__/
 .pytest_cache/
 venv/
+
+# Local documentation backup
+README.backup.md
