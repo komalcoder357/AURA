@@ -67,11 +67,21 @@ def create_app(overrides=None):
             resp.headers["Cache-Control"] = "no-store"
         return resp
 
+    
+
     @app.errorhandler(404)
     def not_found(_):
         if request.path.startswith("/api/"):
             return jsonify(error="Not found."), 404
-        return render_template("login.html", error="Page not found."), 404
+
+        return render_template(
+            "login.html",
+            error="Page not found.",
+            values={},
+            field_errors={},
+        ), 404
+
+
 
     @app.errorhandler(400)
     def bad_request(err):
