@@ -277,3 +277,34 @@ Its purpose is to provide a foundation for further experimentation and evaluatio
 ## License
 
 Check the repository for a license file before reusing, modifying, or distributing this project. If no license is present, do not assume that the code is open for unrestricted reuse.
+## 📸 AURA — Application Screenshots
+
+This gallery showcases the AURA application's interface, emotion analysis, AI interaction, settings, and other available features.
+
+### Application Overview
+
+![AURA Screenshot 1](pictures/Screenshot%20%281%29.png)
+![AURA Screenshot 2](pictures/Screenshot%20%282%29.png)
+![AURA Screenshot 3](pictures/Screenshot%20%283%29.png)
+![AURA Screenshot 4](pictures/Screenshot%20%284%29.png)
+![AURA Screenshot 5](pictures/Screenshot%20%285%29.png)
+![AURA Screenshot 6](pictures/Screenshot%20%286%29.png)
+![AURA Screenshot 7](pictures/Screenshot%20%287%29.png)
+![AURA Screenshot 8](pictures/Screenshot%20%288%29.png)
+![AURA Screenshot 9](pictures/Screenshot%20%289%29.png)
+![AURA Screenshot 10](pictures/Screenshot%20%2810%29.png)
+![AURA Screenshot 11](pictures/Screenshot%20%2811%29.png)
+![AURA Screenshot 12](pictures/Screenshot%20%2812%29.png)
+![AURA Screenshot 13](pictures/Screenshot%20%2813%29.png)
+![AURA Screenshot 14](pictures/Screenshot%20%2814%29.png)
+![AURA Screenshot 15](pictures/Screenshot%20%2815%29.png)
+![AURA Screenshot 16](pictures/Screenshot%20%2816%29.png)
+![AURA Screenshot 17](pictures/Screenshot%20%2817%29.png)
+![AURA Screenshot 18](pictures/Screenshot%20%2818%29.png)
+![AURA Screenshot 19](pictures/Screenshot%20%2819%29.png)
+![AURA Screenshot 20](pictures/Screenshot%20%2820%29.png)
+![AURA Screenshot 21](pictures/Screenshot%20%2821%29.png)
+![AURA Screenshot 22](pictures/Screenshot%20%2822%29.png)
+![AURA Screenshot 23](pictures/Screenshot%20%2823%29.png)
+![AURA Screenshot 24](pictures/Screenshot%20%2824%29.png)
+![AURA Screenshot 25](pictures/Screenshot%20%2825%29.png)
