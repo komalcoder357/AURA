@@ -66,6 +66,8 @@
       section("Activity by day"); bars(r.activity_by_day);
       section("Emotion labels (model estimates)"); bars(r.emotion_estimates);
       section("Reply sources"); bars(r.reply_sources, { gemini: "Gemini", fallback: "Fallback", partial: "Interrupted", safety_template: "Safety template" });
+      section("Message input sources (Typed vs Voice)");
+      bars(r.input_sources || { typed: 0, voice: 0, unknown: 0 }, { typed: "Typed messages", voice: "Voice messages", unknown: "Unknown source" });
       section("Provider errors"); bars(r.provider_errors);
       section("AI reply time");
       const l = r.latency_ms, q = document.createElement("p");

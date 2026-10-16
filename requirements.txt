@@ -7,3 +7,5 @@ google-genai>=1.0
 transformers>=4.40
 torch>=2.2
 pytest>=8.0
+opencv-python>=4.10.0
+onnxruntime>=1.18.0

@@ -5,10 +5,11 @@
   const screen = A.$("#voiceScreen"), mascot = A.$("#voiceMascot"), statusEl = A.$("#vsStatus"), errEl = A.$("#vsError");
   const youEl = A.$("#vsYou"), replyEl = A.$("#vsReply"), editEl = A.$("#vsEdit");
   const micBtn = A.$("#vsMic"), micLabel = A.$("#vsMicLabel"), sendBtn = A.$("#vsSend"), muteBtn = A.$("#vsMute");
-  const GREETING = { "en-US": "Hey! I'm AURA. How are you feeling today?", "ur-PK": "ہائے! میں آورا ہوں۔ آج آپ کیسا محسوس کر رہے ہیں؟" };
+  const GREETING = { "en-US": "Hey! I'm AURA. How are you feeling today?", "ur-PK": "ÛØ§Ø¦Û’! Ù…ÛŒÚº Ø¢ÙˆØ±Ø§ ÛÙˆÚºÛ” Ø¢Ø¬ Ø¢Ù¾ Ú©ÛŒØ³Ø§ Ù…ØØ³ÙˆØ³ Ú©Ø± Ø±ÛÛ’ ÛÛŒÚºØŸ" };
   const LABEL = { idle: "Tap the microphone to talk", listening: "Listening…", transcribing: "Review what I heard", thinking: "Thinking…", speaking: "Speaking…", error: "Something went wrong" };
   const MASCOT = { idle: "idle", listening: "listening", transcribing: "attentive", thinking: "processing", speaking: "speaking", error: "concerned", closed: "idle" };
   let state = "closed", rec = null, abort = null, muted = false, submitting = false, turns = 0, timeout = null;
+  let restartListening = false;
   const prefs = () => (A.settings && A.settings.data) || {};
 
   function setState(s, text) {
@@ -23,17 +24,39 @@
   }
   function showError(msg) { setState("error"); errEl.textContent = msg; errEl.hidden = false; }
 
+  function resumeListeningAfterReply() {
+    if (state === "closed") return;
+    restartListening = true;
+    // Muted replies and speech-engine failures may invoke this callback before submit() finishes.
+    if (!submitting) {
+      restartListening = false;
+      startListening();
+    }
+  }
+
   function speakText(text, after) {
     const p = prefs();
-    if (muted || p.voice_responses === false) { setState("idle"); if (after) after(); return; }
+    if (muted || p.voice_responses === false) {
+      setState("idle");
+      if (after) after();
+      return;
+    }
     const r = A.voice.speak(text, {
       onStart: () => setState("speaking"),
-      onEnd: () => { if (state === "speaking") setState("idle"); if (after) after(); },
+      onEnd: () => {
+        if (state === "speaking") setState("idle");
+        if (after) after();
+      },
     });
-    if (!r.ok) { setState("idle"); A.toast(r.reason); if (after) after(); }
+    if (!r.ok) {
+      setState("idle");
+      A.toast(r.reason);
+      if (after) after();
+    }
   }
 
   function startListening() {
+    if (state === "closed" || !screen || screen.hidden) return;
     if (!A.voice.supported) return showError("Voice input isn't supported in this browser. Chrome or Edge work best. You can close voice mode and type instead.");
     if (state === "thinking") return;
     A.voice.cancelSpeech(); stopRec();
@@ -58,36 +81,53 @@
 
   async function submit(text) {
     text = (text || "").trim();
-    if (submitting) return;                       // never submit the same transcript twice
+    if (submitting) return;
     if (!text) return showError("There's nothing to send yet.");
-    submitting = true; youEl.textContent = text; replyEl.textContent = "…";
+    submitting = true; restartListening = false;
+    youEl.textContent = text; replyEl.textContent = "…";
     setState("thinking");
     abort = new AbortController();
     timeout = setTimeout(() => abort && abort.abort("timeout"), 60000);
     let reply = "";
     try {
-      const { done } = await A.chat.runTurn({ conversation_id: A.chat.state.conversationId, message: text }, {
+      const { done } = await A.chat.runTurn({ conversation_id: A.chat.state.conversationId, message: text, input_source: "voice" }, {
         onDelta: (t) => { reply += t; replyEl.textContent = reply; },
       }, abort.signal);
       turns++;
       const src = done.assistant_message.source;
-      replyEl.textContent = done.assistant_message.content;
-      if (src === "gemini") speakText(done.assistant_message.content);
-      else { showError(src === "fallback" ? "AI replies are unavailable right now. Close voice mode and use Retry in the chat, or try again later." : "I couldn't finish that reply."); if (src === "safety_template") speakText(done.assistant_message.content); }
+      const content = done.assistant_message.content;
+      replyEl.textContent = content;
+      if (src === "gemini" || src === "safety_template") {
+        speakText(content, resumeListeningAfterReply);
+      } else {
+        showError(src === "fallback" ? "AI replies are unavailable right now. Close voice mode and use Retry in the chat, or try again later." : "I couldn't finish that reply.");
+      }
     } catch (e) {
       if (state === "closed") return;
-      if (e.name === "AbortError") { if (abort && abort.signal.reason === "timeout") showError("That took too long. Please try again."); else setState("idle"); }
-      else showError("Couldn't get a reply: " + e.message + ". Check your connection, or close voice mode and type instead.");
-    } finally { clearTimeout(timeout); submitting = false; abort = null; }
+      if (e.name === "AbortError") {
+        if (abort && abort.signal.reason === "timeout") showError("That took too long. Please try again.");
+        else setState("idle");
+      } else showError("Couldn't get a reply: " + e.message + ". Check your connection, or close voice mode and type instead.");
+    } finally {
+      clearTimeout(timeout);
+      submitting = false;
+      abort = null;
+      if (restartListening && state !== "closed") {
+        restartListening = false;
+        startListening();
+      }
+    }
   }
 
-  function stopAll() {            // the Stop button: stops mic, request and speech; calm idle state
+  function stopAll() {
+    restartListening = false;
     stopRec(); A.voice.cancelSpeech(); if (abort) abort.abort();
     if (state !== "closed") setState("idle");
   }
   function open() {
     if (state !== "closed") return;
-    screen.hidden = false; muted = false; muteBtn.setAttribute("aria-pressed", "false"); muteBtn.textContent = "🔊 Mute";
+    screen.hidden = false; muted = false; restartListening = false;
+    muteBtn.setAttribute("aria-pressed", "false"); muteBtn.textContent = "🔊 Mute";
     youEl.textContent = "…"; replyEl.textContent = "…"; turns = 0;
     setState("idle"); A.mascot.set(mascot, "greeting");
     const p = prefs(), greet = GREETING[p.voice_lang] || GREETING["en-US"];
@@ -102,6 +142,7 @@
   }
   function close() {
     if (state === "closed") return;
+    restartListening = false;
     stopRec(); A.voice.cancelSpeech(); if (abort) abort.abort();
     clearTimeout(timeout); submitting = false;
     state = "closed"; screen.hidden = true;
@@ -121,7 +162,7 @@
   A.$("#voiceBtn").addEventListener("click", open);
   screen.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { e.preventDefault(); close(); return; }
-    if (e.key === "Tab") {      // keep focus inside the voice screen
+    if (e.key === "Tab") {
       const f = [...screen.querySelectorAll("button:not([hidden]), textarea:not([hidden])")].filter((x) => !x.disabled);
       if (!f.length) return;
       const first = f[0], last = f[f.length - 1];
@@ -129,6 +170,6 @@
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   });
-  window.addEventListener("pagehide", () => { stopRec(); A.voice.cancelSpeech(); });
+  window.addEventListener("pagehide", () => { restartListening = false; stopRec(); A.voice.cancelSpeech(); });
   A.voicemode = { open, close, getState: () => state };
 })();

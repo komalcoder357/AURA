@@ -137,7 +137,7 @@
     const text = input.value.trim();
     if (!text) return;
     input.value = ""; autosize();
-    turn({ conversation_id: st.conversationId, message: text }, text);
+    turn({ conversation_id: st.conversationId, message: text, input_source: "typed" }, text);
   }
   function retry() {
     if (st.busy || !st.conversationId) return;
